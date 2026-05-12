@@ -72,3 +72,10 @@ class Manager:
         for tenant in tenants_in_apartment ] 
     
     
+    def get_debtors(apartment_key, month, year):
+
+        apartment_key
+        year
+        month
+        
+        if amount_pln < rent_pln 
