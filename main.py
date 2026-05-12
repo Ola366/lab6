@@ -1,5 +1,6 @@
 from src.manager import Manager
 from src.models import Parameters
+import sys
 
 
 def print_section_header(title: str):
@@ -63,11 +64,51 @@ def display_tenants(manager):
                 print(f"      • {format_currency(transfer.amount_pln):>15}  Date: {transfer.date}  Period: {month_year}")
 
 
+# if __name__ == '__main__':
+#     parameters = Parameters()
+#     manager = Manager(parameters)
+
+#     display_apartments(manager)
+#     display_tenants(manager)
+    
+#     print(f"\n{'=' * 70}\n")
+
 if __name__ == '__main__':
     parameters = Parameters()
     manager = Manager(parameters)
 
-    display_apartments(manager)
-    display_tenants(manager)
+    if len(sys.argv) > 1:
+        if len(sys.argv) < 4:
+            print("\nBlad: Za malo argumentow.")
+            print("Poprawne uzycie: python main.py <apartment_key> <year> <month>")
+        else:
+            apartment_key = sys.argv[1]
+            try:
+                year = int(sys.argv[2])
+                month = int(sys.argv[3])
+                
+                settlement = manager.get_settlement(apartment_key, year, month)
+                
+                if settlement:
+                    print_section_header(f"ROZLICZENIE: {apartment_key}")
+                    print(f"Okres: {month:02d}/{year}")
+                    print(f"Calkowity koszt mieszkania: {format_currency(settlement.total_due_pln)}")
+                    
+                    tenants_settlements = manager.create_tenants_settlements(settlement)
+                    if tenants_settlements:
+                        print_subsection_header("Kwoty do zaplaty przez lokatorow")
+                        for ts in tenants_settlements:
+                            print(f"   - {ts.tenant:<25} {format_currency(ts.total_due_pln):>15}")
+                    else:
+                        print("\n   Brak lokatorow przypisanych do tego mieszkania.")
+                else:
+                    print(f"\nBlad: Nie znaleziono danych dla mieszkania {apartment_key} w podanym okresie.")
+            
+            except ValueError:
+                print("\nBlad: Rok i miesiac musza byc liczbami.")
+    else:
+        
+        display_apartments(manager)
+        display_tenants(manager)
     
     print(f"\n{'=' * 70}\n")

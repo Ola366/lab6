@@ -71,11 +71,24 @@ class Manager:
             )
         for tenant in tenants_in_apartment ] 
     
-    
-    def get_debtors(apartment_key, month, year):
+    def get_debtors(self, apartment_key: str, month: int, year: int) -> List[str]:
+        if apartment_key not in self.apartments:
+            return []
+        debtors = []
+        apartment_tenants = [t for t in self.tenants.values() if t.apartment == apartment_key]
+        for tenant in apartment_tenants:
+            total_paid = sum(
+                tr.amount_pln for tr in self.transfers 
+                if tr.tenant == tenant.name 
+                and tr.date.startswith(f"{year}-{month:02d}") 
+            )
+            if total_paid < tenant.rent_pln:
+                debtors.append(tenant.name)
+        return debtors
 
-        apartment_key
-        year
-        month
-        
-        if amount_pln < rent_pln 
+    def get_tax(self, year: int, month: int, tax_rate: float = 0.085) -> int:
+        total_income = sum(
+            tr.amount_pln for tr in self.transfers 
+            if tr.date.startswith(f"{year}-{month:02d}") 
+        )
+        return round(total_income * tax_rate)
